@@ -36,10 +36,10 @@ app.use((req, res, next) => {
 });
 
 app.use(function (req, res, next) {
-  if(!req.url.startsWith('/video')){
-    res.status(400).json({msg: 'Bad request'});
-  }else{
+  if(req.url.startsWith('/video')){
     next();
+  }else{
+    res.status(400).json({msg: 'Bad request'});
   }
 });
 
@@ -61,11 +61,11 @@ app.get("/video/:id", (req, res) => {
   if (!range) {
       res.status(400).send("Requires Range header");
   }
-  const videoPath = 'tmp/' + req.params.id + '.mp4';
+  const videoPath = 'tmp/' + req.params.id;
   const videoSize = fs.statSync(videoPath).size;
   const CHUNK_SIZE = 10 ** 6;
   const start = Number(range.replace(/\D/g, ""));
-  const end = Math.min(start + CHUNK_SIZE, videoSize - 1);
+  const end = Math.min(start + CHUNK_SIZE, videoSize - 1); 
   const contentLength = end - start + 1;
   const headers = {
       "Content-Range": `bytes ${start}-${end}/${videoSize}`,
@@ -76,9 +76,15 @@ app.get("/video/:id", (req, res) => {
   res.writeHead(206, headers);
   const videoStream = fs.createReadStream(videoPath, { start, end });
   videoStream.pipe(res);
-}); 
- 
-// server 
+});
+
+app.delete('/video/:id', (req,res) => {
+  const videoPath = 'tmp/' + req.params.id;
+  fs.unlink(videoPath, () => {})
+  res.status(200)
+});
+
+// server  
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });   
