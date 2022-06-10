@@ -19,12 +19,12 @@ function fileFilter(req, file, callback) {
     callback(null, true);
   } else {
     callback(new Error("Wrong minetype"));
-  }
+  } 
 }
 
 const maxSize = 10 * 1024 * 1024; // 10 Mo
-
-const upload = multer({
+ 
+const upload = multer({  
   storage: storage,
   limits: { fileSize: maxSize },
   fileFilter,
@@ -69,16 +69,16 @@ app.post("/video", function (req, res) {
       "format=duration",
       "-of",
       "default=noprint_wrappers=1:nokey=1",
-      "tmp/1652797178621.mp4",
+      "tmp/" + req.file.filename,
     ]);
 
     subprocess.stdout.on('data', function (data) {
       let totalDuration = parseFloat(data)
-      res.status(200).json({ msg: "File uploaded", file: req.file.filename, duration: totalDuration });
+      res.status(200).json({ msg: "File uploaded", file: req.file.filename, duration: totalDuration*1000 }); // convert duration from s to ms
     });
 
     subprocess.stderr.on('data', function (data) {
-      console.log('stderr: ' + data);
+      console.log('stderr: ' + data); 
     });
 
     subprocess.on("close", (code) => {
