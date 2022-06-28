@@ -31,7 +31,6 @@ const upload = multer({
 }).single("file");
 
 // middleware
-
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
@@ -46,14 +45,18 @@ app.use((req, res, next) => {
 });
 
 app.use(function (req, res, next) {
-  if (req.url.startsWith("/video")) {
+  if (req.url.startsWith("/video") || req.url.startsWith("/edit")) {
     next();
   } else {
     res.status(400).json({ msg: "Bad request" });
   }
 });
 
+app.use(express.json());
+
 // routes
+
+// POST
 app.post("/video", function (req, res) {
   upload(req, res, function (err) {
     if (err instanceof multer.MulterError) {
@@ -81,13 +84,22 @@ app.post("/video", function (req, res) {
       console.log('stderr: ' + data); 
     });
 
-    subprocess.on("close", (code) => {
+    subprocess.on("close", (code) => { 
       console.log(`child process exited with code ${code}`);
     });
 
   });
 });
 
+// POST EDITED VIDEO
+app.post("/edit", (req, res) => {
+  res.status(200)
+  console.log(req.body)
+  //res.status(404).json({msg: "File not found"})
+  //res.status(500).json({msg: "Internal server error"})
+});
+ 
+// GET
 app.get("/video/:id", (req, res) => {
   const range = req.headers.range;
   if (!range) {
@@ -99,7 +111,7 @@ app.get("/video/:id", (req, res) => {
   const start = Number(range.replace(/\D/g, ""));
   const end = Math.min(start + CHUNK_SIZE, videoSize - 1);
   const contentLength = end - start + 1;
-  const headers = {
+  const headers = { 
     "Content-Range": `bytes ${start}-${end}/${videoSize}`,
     "Accept-Ranges": "bytes",
     "Content-Length": contentLength,
@@ -110,6 +122,9 @@ app.get("/video/:id", (req, res) => {
   videoStream.pipe(res);
 });
 
+//
+
+// DELETE
 app.delete("/video/:id", (req, res) => {
   const videoPath = "tmp/" + req.params.id;
   fs.unlink(videoPath, () => {});
