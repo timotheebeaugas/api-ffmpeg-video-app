@@ -93,9 +93,34 @@ app.post("/video", function (req, res) {
 
 // POST EDITED VIDEO
 app.post("/edit", (req, res) => {
-  res.status(200)
-  console.log(req.body)
-  //res.status(404).json({msg: "File not found"})
+  let duration = req.body.duration;
+  let start = req.body.chunk.chunkStart * duration;
+  let end = req.body.chunk.chunkEnd * duration;
+  console.log(start,end) 
+  const subprocess = spawn("ffmpeg", [
+    "-ss",
+    start + "ms",
+    "-to",
+    end + "ms",
+    "-i",
+    "tmp/" + req.body.fileName,
+    "-c",
+    "copy",
+    "tmp/edited" + req.body.fileName,
+  ]);
+
+  subprocess.stdout.on('data', function (data) {
+    res.status(200)
+  });
+
+  subprocess.stderr.on('data', function (data) {
+    console.log('stderr: ' + data); 
+  });
+
+  subprocess.on("close", (code) => { 
+    console.log(`child process exited with code ${code}`);
+  });
+
   //res.status(500).json({msg: "Internal server error"})
 });
  
@@ -126,8 +151,12 @@ app.get("/video/:id", (req, res) => {
 
 // DELETE
 app.delete("/video/:id", (req, res) => {
-  const videoPath = "tmp/" + req.params.id;
+  let videoPath = "tmp/" + req.params.id;
   fs.unlink(videoPath, () => {});
+  videoPath = "tmp/edited" + req.params.id;
+  if (fs.existsSync(videoPath)) {
+    fs.unlink(videoPath, () => {});
+  }
   res.status(200);
 });
 
