@@ -1,10 +1,10 @@
-const fs = require("fs");
+const express = require("express");
 const multer = require("multer");
-const subprocess = require('../services/ffprobe');
+const fs = require("fs");
 
 const storage = multer.diskStorage({
   destination: function (req, file, callback) {
-    callback(null, "../tmp/");
+    callback(null, "tmp/");
   },
   filename: function (req, file, callback) {
     callback(null, Date.now() + "." + "mp4");
@@ -16,16 +16,17 @@ function fileFilter(req, file, callback) {
     callback(null, true);
   } else {
     callback(new Error("Wrong minetype"));
-  }
+  } 
 }
 
 const maxSize = 10 * 1024 * 1024; // 10 Mo
-
-const upload = multer({
+ 
+const upload = multer({  
   storage: storage,
   limits: { fileSize: maxSize },
   fileFilter,
 }).single("file");
+
 
 exports.postVideo = (req, res) => {
   upload(req, res, function (err) {
@@ -34,8 +35,7 @@ exports.postVideo = (req, res) => {
     } else if (err) {
       res.status(400).json({ msg: "Bad request" });
     }
-
-    subprocess(req)
+    const subprocess = require('../services/ffprobe').subprocess(req);
 
     subprocess.stdout.on("data", function (data) {
       let totalDuration = parseFloat(data);

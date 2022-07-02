@@ -4,7 +4,7 @@ exports.deleteFiles = setInterval(() => {
   fs.readdir("tmp/", function (err, files) {
     files.forEach(file => {
       if(Date.now() - file.split('.')[0] > 900000){ // 15mn
-        fs.unlink("../tmp/" + file, () => {});
+        fs.unlink("tmp/" + file, () => {});
       }
     })
   })

@@ -1,5 +1,6 @@
-# Scraping Aliexpress
+# API FFmpeg
 This API upload, store, edit and download small videos through FFmpeg.    
+Please note: The video quality could be deteriorate during the editing process
   
 Uses node `14.17.0`.  
 
@@ -20,7 +21,7 @@ Uses node `14.17.0`.
 npm install  
 ```
 
-### Run without window 
+### Run server 
 ```
 npm start  
 ```
