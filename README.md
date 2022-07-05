@@ -12,7 +12,7 @@ Uses node `14.17.0`.
     ├── routes                              # API's routes
     ├── services                            # system scripts execution 
     ├── tmp                                 # temporary video storage
-    |── app.json                            # app main file      
+    |── app.js                              # app main file      
     └── README.md                           # instructions
 
 
